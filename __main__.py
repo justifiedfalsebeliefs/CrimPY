@@ -1,7 +1,7 @@
 import discord
 import gpt_2_simple as gpt2
 import datetime as dt
-from random import randrange
+from random import randrange, choice
 import re
 from config import discord_token, run_name, checkpoint_dir
 
@@ -56,6 +56,7 @@ class Utterance:
         raw_generated = gpt2.generate(**self.generation_params)
         generated_parsed = re.findall(r'<\|startoftext\|>.+?<\|endoftext\|>', raw_generated[0])
         generated_parsed = [s.replace('<|startoftext|>', '').replace('<|endoftext|>', '') for s in generated_parsed]
+        generated_parsed = [s for s in generated_parsed if len(s) > 25]
         return generated_parsed
 
 
@@ -82,9 +83,6 @@ class Client(discord.Client):
 
     def determine_conversation(self):
         # Determine if a "conversation" already exists. If there's a conversation, don't generate text and flag it
-        if 'goodbye' in self.message_raw.content:
-            self.client_conversation_cache = None
-            return
         if self.client_conversation_cache:
             if self.last_message_dt > dt.datetime.now() - dt.timedelta(minutes=20):
                 return
@@ -111,6 +109,10 @@ class Client(discord.Client):
         if message.author == self.user:
             return
         print('Message received...')
+        if 'goodbye' in self.message_raw.content:
+            self.client_conversation_cache = None
+            await message.channel.send(choice(['Bye!', 'See ya!', ':terry:']))
+            return
         if message.content.lower().startswith('!beta_crim'):
             self.determine_conversation()
             utterance = Utterance(message, self.tf_params)
