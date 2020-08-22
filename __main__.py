@@ -70,6 +70,7 @@ class Client(discord.Client):
             return
 
         if message.content.lower().startswith('!beta_crim'):
+            print('Generating response...')
             self.determine_conversation()
             generation_params = self.response_logic(message)
             if not self.client_conversation_cache:
@@ -80,13 +81,13 @@ class Client(discord.Client):
                 first_message = False
             self.determine_appropriate_message(first_message)
             self.last_message_dt = dt.datetime.now()
+            print('Sending response...')
             await message.channel.send(self.final_message)
 
 
 def main():
     client = Client()
     client.run(discord_token)
-    # TODO FEATURE - recover on crashed TF session
 
 
 if __name__ == "__main__":
