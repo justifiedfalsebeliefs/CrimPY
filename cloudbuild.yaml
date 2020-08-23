@@ -1,0 +1,13 @@
+steps:
+  # build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/crimpy/default', '.']
+  # push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/crimpy/default']
+  # Deploy container image to Cloud Run
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['beta', 'run', 'deploy', 'default', '--image', 'gcr.io/crimpy/default', '--region', 'us-central1']
+images:
+- gcr.io/crimpy/default
+timeout: 1200s
